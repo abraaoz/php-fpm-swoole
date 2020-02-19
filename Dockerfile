@@ -5,15 +5,15 @@ ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE 1
 
 # Install general packages
 RUN apt-get update && apt-get install -qq -y \
-	autoconf \
-	gcc \
-	libc-dev \
-	libcurl4-gnutls-dev \
-	libfreetype6-dev \
-	libjpeg62-turbo-dev \
-	libmcrypt-dev \
-	make \
-	pkg-config \
+    autoconf \
+    gcc \
+    libc-dev \
+    libcurl4-gnutls-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libmcrypt-dev \
+    make \
+    pkg-config \
     build-essential \
     curl \
     default-mysql-client \
