@@ -104,10 +104,19 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x  | bash - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
     apt-get install -qq -y nodejs yarn
 
+# Install igbinary
+RUN cd /usr/src/php/ext \
+    && curl -fsSL https://github.com/igbinary/igbinary/archive/3.1.2.tar.gz -o igbinary.tar.gz \
+    && mkdir -p igbinary \
+    && tar -xf igbinary.tar.gz -C igbinary --strip-components=1 \
+    && rm igbinary.tar.gz \
+    && docker-php-ext-install igbinary
+
 # Install Redis
 RUN mkdir -p /usr/src/php/ext/redis && \
     curl -L https://github.com/phpredis/phpredis/archive/5.1.1.tar.gz | tar xvz -C /usr/src/php/ext/redis --strip 1 && \
     echo 'redis' >> /usr/src/php-available-exts && \
+    docker-php-ext-configure redis --enable-redis-igbinary && \
     docker-php-ext-install redis
 
 # Install Swoole
@@ -116,7 +125,7 @@ RUN cd /tmp && git clone https://github.com/swoole/swoole-src.git && \
     cd swoole-src && \
     git checkout v4.4.16 && \
     phpize && \
-    ./configure  --enable-openssl && \
+    ./configure --enable-openssl && \
     make && \
     make install
 
