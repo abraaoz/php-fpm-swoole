@@ -1,30 +1,28 @@
 FROM php:7.4-fpm
 
-ENV DEBIAN_FRONTEND                      noninteractive
+ENV DEBIAN_FRONTEND noninteractive
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE 1
 
 # Install general packages
 RUN apt-get update && apt-get install -qq -y \
     autoconf \
-    gcc \
-    libc-dev \
-    libcurl4-gnutls-dev \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libmcrypt-dev \
-    make \
-    pkg-config \
     build-essential \
     curl \
     default-mysql-client \
     g++ \
+    gcc \
     git \
     git-core \
     gnupg \
     htop \
+    libc-dev \
+    libcurl4-gnutls-dev \
+    libfreetype6-dev \
     libfreetype6-dev \
     libicu-dev \
     libjpeg62-turbo-dev \
+    libjpeg62-turbo-dev \
+    libmcrypt-dev \
     libonig-dev \
     libpng-dev \
     librabbitmq-dev \
@@ -34,10 +32,12 @@ RUN apt-get update && apt-get install -qq -y \
     libxml2-dev \
     libxpm-dev \
     libzip-dev \
+    make \
     nano \
     net-tools \
     openssh-client \
     openssl \
+    pkg-config \
     procps \
     software-properties-common \
     unzip \
@@ -47,53 +47,48 @@ RUN apt-get update && apt-get install -qq -y \
 # Install APCU
 ADD https://pecl.php.net/get/apcu-5.1.17.tgz /tmp/apcu.tar.gz
 RUN mkdir -p /usr/src/php/ext/apcu && \
-    tar xf /tmp/apcu.tar.gz -C /usr/src/php/ext/apcu --strip-components=1
-
-RUN docker-php-ext-configure apcu && \
-    docker-php-ext-install apcu
-
-RUN rm -rd /usr/src/php/ext/apcu && rm /tmp/apcu.tar.gz
+    tar xf /tmp/apcu.tar.gz -C /usr/src/php/ext/apcu --strip-components=1 && \
+    docker-php-ext-configure apcu && \
+    docker-php-ext-install apcu && \
+    rm -rd /usr/src/php/ext/apcu && \
+    rm /tmp/apcu.tar.gz
 
 ADD https://pecl.php.net/get/apcu_bc-1.0.3.tgz /tmp/apcu_bc.tar.gz
 RUN mkdir -p /usr/src/php/ext/apcu-bc && \
-    tar xf /tmp/apcu_bc.tar.gz -C /usr/src/php/ext/apcu-bc --strip-components=1
-
-RUN docker-php-ext-configure apcu-bc && \
-    docker-php-ext-install apcu-bc
-
-RUN rm -rd /usr/src/php/ext/apcu-bc && rm /tmp/apcu_bc.tar.gz
-
-RUN rm /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini
-RUN echo extension=apcu.so > /usr/local/etc/php/conf.d/20-php-ext-apcu.ini
+    tar xf /tmp/apcu_bc.tar.gz -C /usr/src/php/ext/apcu-bc --strip-components=1 && \
+    docker-php-ext-configure apcu-bc && \
+    docker-php-ext-install apcu-bc && \
+    rm -rd /usr/src/php/ext/apcu-bc && \
+    rm /tmp/apcu_bc.tar.gz && \
+    rm /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini && \
+    echo 'extension=apcu.so' > /usr/local/etc/php/conf.d/20-php-ext-apcu.ini
 
 # Install APC
-RUN rm /usr/local/etc/php/conf.d/docker-php-ext-apc.ini
-RUN echo extension=apc.so > /usr/local/etc/php/conf.d/21-php-ext-apc.ini
+RUN rm /usr/local/etc/php/conf.d/docker-php-ext-apc.ini && \
+    echo 'extension=apc.so' > /usr/local/etc/php/conf.d/21-php-ext-apc.ini
 
 # Install other extensions
-RUN docker-php-ext-install bcmath
-
-RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/
-
-RUN docker-php-ext-install gd
-RUN docker-php-ext-install intl
-RUN docker-php-ext-install pdo_mysql
-RUN docker-php-ext-install mysqli
-RUN docker-php-ext-install curl
-RUN docker-php-ext-install opcache
-RUN docker-php-ext-install zip
-RUN docker-php-ext-install xml
-RUN docker-php-ext-install json
-RUN docker-php-ext-install mbstring
-RUN docker-php-ext-install sockets
-RUN docker-php-ext-install exif
+RUN docker-php-ext-install bcmath && \
+    docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ && \
+    docker-php-ext-install gd && \
+    docker-php-ext-install intl && \
+    docker-php-ext-install pdo_mysql && \
+    docker-php-ext-install mysqli && \
+    docker-php-ext-install curl && \
+    docker-php-ext-install opcache && \
+    docker-php-ext-install zip && \
+    docker-php-ext-install xml && \
+    docker-php-ext-install json && \
+    docker-php-ext-install mbstring && \
+    docker-php-ext-install sockets && \
+    docker-php-ext-install exif
 
 # Generate locales
-RUN apt-get install -y locales
-RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
-RUN echo "en_GB.UTF-8 UTF-8" >> /etc/locale.gen
-RUN echo "cs_CZ.UTF-8 UTF-8" >> /etc/locale.gen
-RUN locale-gen
+RUN apt-get install -y locales && \
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
+    echo "en_GB.UTF-8 UTF-8" >> /etc/locale.gen && \
+    echo "cs_CZ.UTF-8 UTF-8" >> /etc/locale.gen && \
+    locale-gen
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -106,12 +101,12 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x  | bash - && \
     apt-get install -qq -y nodejs yarn
 
 # Install igbinary
-RUN cd /usr/src/php/ext \
-    && curl -fsSL https://github.com/igbinary/igbinary/archive/3.1.2.tar.gz -o igbinary.tar.gz \
-    && mkdir -p igbinary \
-    && tar -xf igbinary.tar.gz -C igbinary --strip-components=1 \
-    && rm igbinary.tar.gz \
-    && docker-php-ext-install igbinary
+RUN cd /usr/src/php/ext && \
+    curl -fsSL https://github.com/igbinary/igbinary/archive/3.1.2.tar.gz -o igbinary.tar.gz && \
+    mkdir -p igbinary && \
+    tar -xf igbinary.tar.gz -C igbinary --strip-components=1 && \
+    rm igbinary.tar.gz && \
+    docker-php-ext-install igbinary
 
 # Install Redis
 RUN mkdir -p /usr/src/php/ext/redis && \
@@ -128,6 +123,12 @@ RUN cd /tmp && git clone https://github.com/swoole/swoole-src.git && \
     phpize && \
     ./configure --enable-openssl && \
     make && \
-    make install
+    make install && \
+    cd /tmp && \
+    rm -rf swoole-src && \
+    echo 'extension=swoole.so' > /usr/local/etc/php/conf.d/swoole.ini
 
-RUN echo 'extension=swoole.so' > /usr/local/etc/php/conf.d/swoole.ini
+# Install Swoole Async
+# https://github.com/swoole/ext-async
+COPY swoole_async.so /usr/local/lib/php/extensions/swoole_async.so
+RUN echo 'extension=/usr/local/lib/php/extensions/swoole_async.so' > /usr/local/etc/php/conf.d/swoole_async.ini
