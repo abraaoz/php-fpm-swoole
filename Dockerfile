@@ -90,7 +90,8 @@ RUN docker-php-ext-install bcmath && \
     docker-php-ext-install json && \
     docker-php-ext-install mbstring && \
     docker-php-ext-install sockets && \
-    docker-php-ext-install exif
+    docker-php-ext-install exif && \
+    docker-php-ext-install fileinfo
 
 # Generate locales
 RUN apt-get install -y locales && \
@@ -141,3 +142,6 @@ RUN cd /tmp && git clone https://github.com/swoole/swoole-src.git && \
 # https://github.com/swoole/ext-async
 COPY swoole_async.so /usr/local/lib/php/extensions/swoole_async.so
 RUN echo 'extension=/usr/local/lib/php/extensions/swoole_async.so' > /usr/local/etc/php/conf.d/swoole_async.ini
+
+# Custom php.ini
+COPY php.ini /usr/local/etc/php/php.ini
