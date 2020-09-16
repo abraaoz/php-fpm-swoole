@@ -138,6 +138,19 @@ RUN cd /tmp && git clone https://github.com/swoole/swoole-src.git && \
     rm -rf swoole-src && \
     echo 'extension=swoole.so' > /usr/local/etc/php/conf.d/swoole.ini
 
+# Install PostgreSQL extm
+# based on https://www.swoole.co.uk/docs/modules/swoole-coroutine-postgres
+RUN cd /tmp && git clone https://github.com/swoole/ext-postgresql.git && \
+    cd ext-postgresql && \
+    git checkout v4.4.16 && \
+    phpize && \
+    ./configure --enable-openssl && \
+    make && \
+    make install && \
+    cd /tmp && \
+    rm -rf ext-postgresql && \
+    echo 'extension=swoole_postgresql.so' > /usr/local/etc/php/conf.d/swoole_postgresql.ini
+
 # Install Swoole Async
 # https://github.com/swoole/ext-async
 COPY swoole_async.so /usr/local/lib/php/extensions/swoole_async.so
