@@ -158,3 +158,6 @@ RUN echo 'extension=/usr/local/lib/php/extensions/swoole_async.so' > /usr/local/
 
 # Custom php.ini
 COPY php.ini /usr/local/etc/php/php.ini
+
+# Custom www.conf
+COPY www.conf /usr/local/etc/php-fpm.d/www.conf
