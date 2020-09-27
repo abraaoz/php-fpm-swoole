@@ -78,6 +78,10 @@ RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
     docker-php-ext-install pdo_pgsql && \
     docker-php-ext-install pgsql
 
+# Install inotify
+RUN pecl install inotify && \
+    docker-php-ext-enable inotify
+
 # Install other extensions
 RUN docker-php-ext-install bcmath && \
     docker-php-ext-install intl && \
