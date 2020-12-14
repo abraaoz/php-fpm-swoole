@@ -75,6 +75,7 @@ RUN docker-php-ext-install mbstring
 RUN docker-php-ext-install sockets
 RUN docker-php-ext-install exif
 RUN docker-php-ext-install fileinfo
+RUN docker-php-ext-install pcntl
 
 # Generate locales
 RUN apt-get install -y locales && \
@@ -121,9 +122,9 @@ RUN cd /tmp && git clone https://github.com/swoole/swoole-src.git && \
 
 # Install Swoole PostgreSQL
 # based on https://www.swoole.co.uk/docs/modules/swoole-coroutine-postgres
-RUN cd /tmp && git clone https://github.com/youtuosoft/ext-postgresql.git && \
+RUN cd /tmp && git clone https://github.com/swoole/ext-postgresql.git && \
     cd ext-postgresql && \
-    git checkout 191d0931c99d21b35fc45432cd3d908a9abbe623 && \
+    git checkout eb076d72cb35b1a458a886e259dbbc30feecb298 && \
     mkdir ext && \
     ln -s /tmp/swoole-src/ext-src ext/swoole && \
     phpize && \
