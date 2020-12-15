@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -qq -y \
     htop \
     libc-dev \
     libcurl4-gnutls-dev \
+    libevent-dev \
     libfreetype6-dev \
     libicu-dev \
     libjpeg62-turbo-dev \
@@ -76,6 +77,15 @@ RUN docker-php-ext-install sockets
 RUN docker-php-ext-install exif
 RUN docker-php-ext-install fileinfo
 RUN docker-php-ext-install pcntl
+
+# Install Event
+ADD https://pecl.php.net/get/event-3.0.2.tgz /tmp/event.tar.gz
+RUN mkdir -p /usr/src/php/ext/event && \
+    tar xf /tmp/event.tar.gz -C /usr/src/php/ext/event --strip-components=1 && \
+    docker-php-ext-configure event --with-event-pthreads --with-event-openssl=no --enable-event-sockets=no && \
+    docker-php-ext-install event && \
+    rm -rd /usr/src/php/ext/event && \
+    rm /tmp/event.tar.gz
 
 # Generate locales
 RUN apt-get install -y locales && \
