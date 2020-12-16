@@ -1,4 +1,4 @@
-FROM php:8.0-fpm
+FROM php:7.4-fpm
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE 1
@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -qq -y \
     htop \
     libc-dev \
     libcurl4-gnutls-dev \
-    libevent-dev \
     libfreetype6-dev \
     libicu-dev \
     libjpeg62-turbo-dev \
@@ -54,6 +53,20 @@ RUN mkdir -p /usr/src/php/ext/apcu && \
     rm -rd /usr/src/php/ext/apcu && \
     rm /tmp/apcu.tar.gz
 
+ADD https://pecl.php.net/get/apcu_bc-1.0.5.tgz /tmp/apcu_bc.tar.gz
+RUN mkdir -p /usr/src/php/ext/apcu-bc && \
+    tar xf /tmp/apcu_bc.tar.gz -C /usr/src/php/ext/apcu-bc --strip-components=1 && \
+    docker-php-ext-configure apcu-bc && \
+    docker-php-ext-install apcu-bc && \
+    rm -rd /usr/src/php/ext/apcu-bc && \
+    rm /tmp/apcu_bc.tar.gz && \
+    rm /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini && \
+    echo 'extension=apcu.so' > /usr/local/etc/php/conf.d/20-php-ext-apcu.ini
+
+# Install APC
+RUN rm /usr/local/etc/php/conf.d/docker-php-ext-apc.ini && \
+    echo 'extension=apc.so' > /usr/local/etc/php/conf.d/21-php-ext-apc.ini
+
 # Install Graphics Draw (GD)
 RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ && \
     docker-php-ext-install gd
@@ -62,6 +75,10 @@ RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/i
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
     docker-php-ext-install pdo_pgsql && \
     docker-php-ext-install pgsql
+
+# Install inotify
+RUN pecl install inotify && \
+    docker-php-ext-enable inotify
 
 # Install other extensions
 RUN docker-php-ext-install bcmath
@@ -72,20 +89,11 @@ RUN docker-php-ext-install curl
 RUN docker-php-ext-install opcache
 RUN docker-php-ext-install zip
 RUN docker-php-ext-install xml
+RUN docker-php-ext-install json
 RUN docker-php-ext-install mbstring
 RUN docker-php-ext-install sockets
 RUN docker-php-ext-install exif
 RUN docker-php-ext-install fileinfo
-RUN docker-php-ext-install pcntl
-
-# Install Event
-ADD https://pecl.php.net/get/event-3.0.2.tgz /tmp/event.tar.gz
-RUN mkdir -p /usr/src/php/ext/event && \
-    tar xf /tmp/event.tar.gz -C /usr/src/php/ext/event --strip-components=1 && \
-    docker-php-ext-configure event --with-event-pthreads --with-event-openssl=no --enable-event-sockets=no && \
-    docker-php-ext-install event && \
-    rm -rd /usr/src/php/ext/event && \
-    rm /tmp/event.tar.gz
 
 # Generate locales
 RUN apt-get install -y locales && \
@@ -123,20 +131,19 @@ RUN mkdir -p /usr/src/php/ext/redis && \
 # based on https://www.swoole.co.uk/docs/get-started/try-docker
 RUN cd /tmp && git clone https://github.com/swoole/swoole-src.git && \
     cd swoole-src && \
-    git checkout v4.5.9 && \
+    git checkout v4.5.7 && \
     phpize && \
     ./configure --enable-openssl && \
     make -j $(nproc) && \
     make install && \
+    cd /tmp && \
     echo 'extension=swoole.so' > /usr/local/etc/php/conf.d/swoole.ini
 
 # Install Swoole PostgreSQL
 # based on https://www.swoole.co.uk/docs/modules/swoole-coroutine-postgres
 RUN cd /tmp && git clone https://github.com/swoole/ext-postgresql.git && \
     cd ext-postgresql && \
-    git checkout eb076d72cb35b1a458a886e259dbbc30feecb298 && \
-    mkdir ext && \
-    ln -s /tmp/swoole-src/ext-src ext/swoole && \
+    git checkout ab616dbc19354c8cd1616ccc3a3e261d4ecd4d35 && \
     phpize && \
     ./configure && \
     make -j $(nproc) && \
@@ -147,16 +154,16 @@ RUN cd /tmp && git clone https://github.com/swoole/ext-postgresql.git && \
 
 # Install Swoole Async
 # https://github.com/swoole/ext-async
-# RUN cd /tmp && git clone https://github.com/swoole/ext-async.git && \
-#     cd ext-async && \
-#     git checkout v4.5.5 && \
-#     phpize && \
-#     ./configure && \
-#     make -j $(nproc) && \
-#     make install && \
-#     cd /tmp && \
-#     rm -rf ext-async && \
-#     echo 'extension=swoole_async.so' > /usr/local/etc/php/conf.d/swoole_async.ini
+RUN cd /tmp && git clone https://github.com/swoole/ext-async.git && \
+    cd ext-async && \
+    git checkout 87aba176d02c7a0f2078dee3334f863226089daf && \
+    phpize && \
+    ./configure && \
+    make -j $(nproc) && \
+    make install && \
+    cd /tmp && \
+    rm -rf ext-async && \
+    echo 'extension=swoole_async.so' > /usr/local/etc/php/conf.d/swoole_async.ini
 
 # Custom php.ini
 COPY php.ini /usr/local/etc/php/php.ini
