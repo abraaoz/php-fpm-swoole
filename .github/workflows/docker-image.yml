@@ -1,0 +1,18 @@
+name: php-fpm-swoole
+
+on:
+  workflow_dispatch:
+
+  push:
+    tags:
+      - latest
+      - php8
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag php-fpm-swoole:$(date +%s)
